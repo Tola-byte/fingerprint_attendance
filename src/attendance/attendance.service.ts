@@ -119,31 +119,86 @@ export class AttendanceService {
 
   // Step 1: Hardware sends fingerprint ID, backend creates pending student
   async createPendingStudentFromHardware(fingerprintId: string): Promise<{ id: string }> {
-    const pendingStudent = this.pendingStudentRepository.create({
-      isCompleted: false,
-      matric: fingerprintId, // Store the fingerprint ID temporarily
-    });
-
-    await this.pendingStudentRepository.save(pendingStudent);
+    console.log('🔧 [HARDWARE] Creating pending student for fingerprintId:', fingerprintId);
     
-    return { id: fingerprintId }; // Return the actual fingerprint ID
+    try {
+      const pendingStudent = this.pendingStudentRepository.create({
+        isCompleted: false,
+        matric: fingerprintId, // Store the fingerprint ID temporarily
+      });
+
+      console.log('🔧 [HARDWARE] Pending student object created:', pendingStudent);
+      
+      const savedStudent = await this.pendingStudentRepository.save(pendingStudent);
+      console.log('🔧 [HARDWARE] Pending student saved to database:', {
+        id: savedStudent.id,
+        matric: savedStudent.matric,
+        isCompleted: savedStudent.isCompleted,
+        createdAt: savedStudent.createdAt
+      });
+      
+      const result = { id: fingerprintId };
+      console.log('🔧 [HARDWARE] Returning result:', result);
+      return result;
+      
+    } catch (error) {
+      console.error('❌ [HARDWARE] Error creating pending student:', error);
+      console.error('❌ [HARDWARE] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        fingerprintId: fingerprintId
+      });
+      throw error;
+    }
   }
 
   // Step 2: Poll for new pending student IDs (persistent - won't get lost on multiple polls)
   async getNewUsers(): Promise<{ id: string }> {
-    // Always return the first incomplete pending student
-    const pendingStudent = await this.pendingStudentRepository.findOne({
-      where: { isCompleted: false },
-      order: { id: 'ASC' }
-    });
+    console.log('🔍 [POLLING] Starting getNewUsers()...');
+    
+    try {
+      console.log('🔍 [POLLING] Querying database for pending students...');
+      
+      // Always return the first incomplete pending student
+      const pendingStudent = await this.pendingStudentRepository.findOne({
+        where: { isCompleted: false },
+        order: { id: 'ASC' }
+      });
 
-    if (pendingStudent) {
-      // Return the fingerprint ID (stored in matric field)
-      return { id: pendingStudent.matric };
+      console.log('🔍 [POLLING] Database query completed');
+      console.log('🔍 [POLLING] Pending student found:', pendingStudent ? 'YES' : 'NO');
+      
+      if (pendingStudent) {
+        console.log('🔍 [POLLING] Pending student details:', {
+          id: pendingStudent.id,
+          matric: pendingStudent.matric,
+          name: pendingStudent.name,
+          isCompleted: pendingStudent.isCompleted,
+          createdAt: pendingStudent.createdAt
+        });
+        
+        // Return the fingerprint ID (stored in matric field)
+        const result = { id: pendingStudent.matric };
+        console.log('🔍 [POLLING] Returning result:', result);
+        return result;
+      }
+
+      // Return empty object if no pending students
+      console.log('🔍 [POLLING] No pending students found, returning empty ID');
+      return { id: "" };
+      
+    } catch (error) {
+      console.error('❌ [POLLING] Error in getNewUsers():', error);
+      console.error('❌ [POLLING] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      
+      // Return empty object on error to prevent frontend crashes
+      return { id: "" };
     }
-
-    // Return empty object if no pending students
-    return { id: "" };
   }
 
   // Step 3: Complete student registration with data (frontend form submission)

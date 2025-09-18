@@ -103,7 +103,27 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Poll for new pending student IDs (Frontend polling)' })
   @ApiResponse({ status: 200, description: 'Pending student ID retrieved successfully', type: NewUserDto })
   async pollNewUsers() {
-    return await this.attendanceService.getNewUsers();
+    console.log('📡 [CONTROLLER] Polling endpoint called at:', new Date().toISOString());
+    console.log('📡 [CONTROLLER] Request headers:', JSON.stringify(this.getRequestHeaders(), null, 2));
+    
+    try {
+      const result = await this.attendanceService.getNewUsers();
+      console.log('📡 [CONTROLLER] Service returned:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ [CONTROLLER] Error in pollNewUsers():', error);
+      console.error('❌ [CONTROLLER] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      throw error;
+    }
+  }
+
+  private getRequestHeaders() {
+    // This is a placeholder - in a real implementation you'd get headers from the request object
+    return { 'user-agent': 'curl/7.68.0', 'accept': '*/*' };
   }
 
   @Post('hardware/detect')
@@ -119,6 +139,23 @@ export class AttendanceController {
   })
   @ApiResponse({ status: 201, description: 'Fingerprint ID received and pending student created', type: NewUserDto })
   async hardwareDetect(@Body('fingerprintId') fingerprintId: string) {
-    return await this.attendanceService.createPendingStudentFromHardware(fingerprintId);
+    console.log('🔧 [CONTROLLER] Hardware detect endpoint called at:', new Date().toISOString());
+    console.log('🔧 [CONTROLLER] Received fingerprintId:', fingerprintId);
+    console.log('🔧 [CONTROLLER] fingerprintId type:', typeof fingerprintId);
+    
+    try {
+      const result = await this.attendanceService.createPendingStudentFromHardware(fingerprintId);
+      console.log('🔧 [CONTROLLER] Service returned:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ [CONTROLLER] Error in hardwareDetect():', error);
+      console.error('❌ [CONTROLLER] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        fingerprintId: fingerprintId
+      });
+      throw error;
+    }
   }
 }
