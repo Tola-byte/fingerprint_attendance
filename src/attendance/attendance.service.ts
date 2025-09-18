@@ -124,14 +124,14 @@ export class AttendanceService {
     try {
       // Check if a pending student with this fingerprint ID already exists
       const existingPendingStudent = await this.pendingStudentRepository.findOne({
-        where: { matric: fingerprintId, isCompleted: false }
+        where: { fingerprintId: fingerprintId, isCompleted: false }
       });
 
       if (existingPendingStudent) {
         console.log('🔧 [HARDWARE] Pending student already exists for fingerprintId:', fingerprintId);
         console.log('🔧 [HARDWARE] Existing pending student:', {
           id: existingPendingStudent.id,
-          matric: existingPendingStudent.matric,
+          fingerprintId: existingPendingStudent.fingerprintId,
           isCompleted: existingPendingStudent.isCompleted
         });
         
@@ -142,7 +142,7 @@ export class AttendanceService {
 
       const pendingStudent = this.pendingStudentRepository.create({
         isCompleted: false,
-        matric: fingerprintId, 
+        fingerprintId: fingerprintId, 
       });
 
       console.log('🔧 [HARDWARE] Pending student object created:', pendingStudent);
@@ -150,12 +150,12 @@ export class AttendanceService {
       const savedStudent = await this.pendingStudentRepository.save(pendingStudent);
       console.log('🔧 [HARDWARE] Pending student saved to database:', {
         id: savedStudent.id,
-        matric: savedStudent.matric,
+        fingerprintId: savedStudent.fingerprintId,
         isCompleted: savedStudent.isCompleted,
         createdAt: savedStudent.createdAt
       });
       
-      const result = { id: savedStudent.matric };
+      const result = { id: fingerprintId };
       console.log('🔧 [HARDWARE] Returning result:', result);
       return result;
       
@@ -190,14 +190,14 @@ export class AttendanceService {
       if (pendingStudent) {
         console.log('🔍 [POLLING] Pending student details:', {
           id: pendingStudent.id,
-          matric: pendingStudent.matric,
+          fingerprintId: pendingStudent.fingerprintId,
           name: pendingStudent.name,
           isCompleted: pendingStudent.isCompleted,
           createdAt: pendingStudent.createdAt
         });
         
-        // Return the fingerprint ID (stored in matric field)
-        const result = { id: pendingStudent.matric };
+        // Return the fingerprint ID directly
+        const result = { id: pendingStudent.fingerprintId };
         console.log('🔍 [POLLING] Returning result:', result);
         return result;
       }
@@ -221,9 +221,9 @@ export class AttendanceService {
 
   // Step 3: Complete student registration with data (frontend form submission)
   async addStudent(fingerprintId: string, name: string, matric: string, imagePath: string) {
-    // Find the pending student by fingerprint ID (stored in matric field)
+    // Find the pending student by fingerprint ID
     const pendingStudent = await this.pendingStudentRepository.findOne({
-      where: { matric: fingerprintId, isCompleted: false }
+      where: { fingerprintId: fingerprintId, isCompleted: false }
     });
 
     if (!pendingStudent) {
