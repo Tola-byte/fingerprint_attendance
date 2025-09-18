@@ -11,7 +11,7 @@ export class PendingStudent {
   @Column({ nullable: true })
   matric: string;
 
-  @Column()
+  @Column({ nullable: true })
   fingerprintId: string;
 
   @Column({ nullable: true })
