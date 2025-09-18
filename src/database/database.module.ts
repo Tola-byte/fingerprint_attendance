@@ -17,7 +17,7 @@ import { PendingStudent } from '../entities/pending-student.entity';
         password: configService.get('DB_PASSWORD', 'password'),
         database: configService.get('DB_DATABASE', 'attendance_db'),
         entities: [Student, Attendance, PendingStudent],
-        synchronize: configService.get('NODE_ENV') !== 'production', // Only for development
+        synchronize: true, // Enable for all environments
         ssl: configService.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
       }),
       inject: [ConfigService],
