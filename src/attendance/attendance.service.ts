@@ -142,7 +142,7 @@ export class AttendanceService {
 
       const pendingStudent = this.pendingStudentRepository.create({
         isCompleted: false,
-        matric: fingerprintId, // Store the fingerprint ID temporarily
+        matric: fingerprintId, 
       });
 
       console.log('🔧 [HARDWARE] Pending student object created:', pendingStudent);
@@ -155,7 +155,7 @@ export class AttendanceService {
         createdAt: savedStudent.createdAt
       });
       
-      const result = { id: fingerprintId };
+      const result = { id: savedStudent.matric };
       console.log('🔧 [HARDWARE] Returning result:', result);
       return result;
       
