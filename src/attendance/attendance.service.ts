@@ -179,7 +179,7 @@ export class AttendanceService {
         });
         
         // Return the fingerprint ID (stored in matric field)
-        const result = { id: pendingStudent.matric };
+        const result = { id: pendingStudent.id.toString() };
         console.log('🔍 [POLLING] Returning result:', result);
         return result;
       }
