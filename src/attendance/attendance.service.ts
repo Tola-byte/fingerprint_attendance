@@ -122,6 +122,24 @@ export class AttendanceService {
     console.log('🔧 [HARDWARE] Creating pending student for fingerprintId:', fingerprintId);
     
     try {
+      // Check if a pending student with this fingerprint ID already exists
+      const existingPendingStudent = await this.pendingStudentRepository.findOne({
+        where: { matric: fingerprintId, isCompleted: false }
+      });
+
+      if (existingPendingStudent) {
+        console.log('🔧 [HARDWARE] Pending student already exists for fingerprintId:', fingerprintId);
+        console.log('🔧 [HARDWARE] Existing pending student:', {
+          id: existingPendingStudent.id,
+          matric: existingPendingStudent.matric,
+          isCompleted: existingPendingStudent.isCompleted
+        });
+        
+        const result = { id: fingerprintId };
+        console.log('🔧 [HARDWARE] Returning existing result:', result);
+        return result;
+      }
+
       const pendingStudent = this.pendingStudentRepository.create({
         isCompleted: false,
         matric: fingerprintId, // Store the fingerprint ID temporarily
@@ -179,7 +197,7 @@ export class AttendanceService {
         });
         
         // Return the fingerprint ID (stored in matric field)
-        const result = { id: pendingStudent.id.toString() };
+        const result = { id: pendingStudent.matric };
         console.log('🔍 [POLLING] Returning result:', result);
         return result;
       }
@@ -260,14 +278,14 @@ export class AttendanceService {
     };
   }
 
-  async getStudentById(studentId: number) {
+  async getStudentByFingerprintId(fingerprintId: string) {
     const student = await this.studentRepository.findOne({ 
-      where: { id: studentId },
+      where: { fingerprintId: fingerprintId },
       relations: ['attendances']
     });
     
     if (!student) {
-      throw new NotFoundException(`Student with ID ${studentId} not found. Please check the student ID and try again.`);
+      throw new NotFoundException(`Student with fingerprint ID ${fingerprintId} not found. Please check the fingerprint ID and try again.`);
     }
 
     // Calculate attendance percentage
@@ -309,10 +327,10 @@ export class AttendanceService {
     };
   }
 
-  async markAttendance(studentId: number) {
-    const student = await this.studentRepository.findOne({ where: { id: studentId } });
+  async markAttendance(fingerprintId: string) {
+    const student = await this.studentRepository.findOne({ where: { fingerprintId: fingerprintId } });
     if (!student) {
-      throw new NotFoundException(`Student with ID ${studentId} not found. Please check the student ID and try again.`);
+      throw new NotFoundException(`Student with fingerprint ID ${fingerprintId} not found. Please check the fingerprint ID and try again.`);
     }
 
     const now = new Date();
@@ -328,7 +346,7 @@ export class AttendanceService {
     if (isDemoMode) {
       // Demo mode: create new attendance record each time (simulates new day)
       const attendance = this.attendanceRepository.create({
-        studentId,
+        studentId: student.id,
         attendanceDate: now, // Use current timestamp for demo
         firstSignIn: timeString,
         lastSignIn: timeString,
@@ -340,7 +358,7 @@ export class AttendanceService {
       
       // Get the updated count after saving
       const updatedStudent = await this.studentRepository.findOne({
-        where: { id: studentId },
+        where: { id: student.id },
         relations: ['attendances']
       });
       
@@ -361,7 +379,7 @@ export class AttendanceService {
       
       const existingAttendance = await this.attendanceRepository.findOne({
         where: {
-          studentId,
+          studentId: student.id,
           attendanceDate: Between(today, new Date(today.getTime() + 24 * 60 * 60 * 1000))
         }
       });
@@ -388,7 +406,7 @@ export class AttendanceService {
       } else {
         // Create new attendance record for today
         const attendance = this.attendanceRepository.create({
-          studentId,
+          studentId: student.id,
           attendanceDate: today,
           firstSignIn: timeString,
           lastSignIn: timeString,

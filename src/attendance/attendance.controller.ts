@@ -46,11 +46,11 @@ export class AttendanceController {
   }
 
   @Get('student/:id')
-  @ApiOperation({ summary: 'Get student information by ID' })
+  @ApiOperation({ summary: 'Get student information by fingerprint ID' })
   @ApiResponse({ status: 200, description: 'Student information retrieved successfully', type: StudentDto })
   @ApiResponse({ status: 404, description: 'Student not found' })
-  async getStudentById(@Param('id') id: number) {
-    return await this.attendanceService.getStudentById(id);
+  async getStudentById(@Param('id') fingerprintId: string) {
+    return await this.attendanceService.getStudentByFingerprintId(fingerprintId);
   }
 
 
@@ -92,11 +92,11 @@ export class AttendanceController {
   }
 
   @Post('markAttendance/:studentId')
-  @ApiOperation({ summary: 'Mark attendance for a student' })
+  @ApiOperation({ summary: 'Mark attendance for a student by fingerprint ID' })
   @ApiResponse({ status: 201, description: 'Attendance marked successfully' })
   @ApiResponse({ status: 404, description: 'Student not found' })
-  async markAttendance(@Param('studentId') studentId: number) {
-    return await this.attendanceService.markAttendance(studentId);
+  async markAttendance(@Param('studentId') fingerprintId: string) {
+    return await this.attendanceService.markAttendance(fingerprintId);
   }
 
   @Get('addStudent')
