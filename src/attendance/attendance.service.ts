@@ -178,10 +178,10 @@ export class AttendanceService {
     try {
       console.log('🔍 [POLLING] Querying database for pending students...');
       
-      // Always return the first incomplete pending student
+      // Always return the most recent incomplete pending student (by creation time)
       const pendingStudent = await this.pendingStudentRepository.findOne({
         where: { isCompleted: false },
-        order: { id: 'ASC' }
+        order: { createdAt: 'DESC' }
       });
 
       console.log(pendingStudent, "this is pending student")
