@@ -119,7 +119,7 @@ export class AttendanceService {
 
   // Step 1: Hardware sends fingerprint ID, backend creates pending student
   async createPendingStudentFromHardware(fingerprintId: string): Promise<{ id: string }> {
-    console.log('🔧 [HARDWARE] Creating pending student for fingerprintId:', fingerprintId);
+    //console.log('🔧 [HARDWARE] Creating pending student for fingerprintId:', fingerprintId);
     
     try {
       // Check if a pending student with this fingerprint ID already exists
@@ -145,7 +145,7 @@ export class AttendanceService {
         fingerprintId: fingerprintId, 
       });
 
-      console.log('🔧 [HARDWARE] Pending student object created:', pendingStudent);
+     // console.log('🔧 [HARDWARE] Pending student object created:', pendingStudent);
       
       const savedStudent = await this.pendingStudentRepository.save(pendingStudent);
       console.log('🔧 [HARDWARE] Pending student saved to database:', {
@@ -183,6 +183,8 @@ export class AttendanceService {
         where: { isCompleted: false },
         order: { id: 'ASC' }
       });
+
+      console.log(pendingStudent, "this is pending student")
 
       console.log('🔍 [POLLING] Database query completed');
       console.log('🔍 [POLLING] Pending student found:', pendingStudent ? 'YES' : 'NO');
